@@ -37,6 +37,10 @@ if (useHttp) {
   const http = await import("node:http");
 
   const PORT = parseInt(process.env.PORT ?? "3000", 10);
+  if (!Number.isInteger(PORT) || PORT < 0 || PORT > 65535) {
+    process.stderr.write(`ERROR: invalid PORT "${process.env.PORT}"\n`);
+    process.exit(1);
+  }
 
   const httpServer = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);

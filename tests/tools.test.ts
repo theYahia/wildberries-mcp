@@ -152,6 +152,13 @@ describe("Tool handlers — host routing", () => {
     });
   });
 
+  it("encodes string path segments to prevent path traversal", async () => {
+    await handleTool(client, "deliver_supply", { supplyId: "../orders/999" });
+    const path = (client.patch as ReturnType<typeof vi.fn>).mock.calls[0][1] as string;
+    expect(path).not.toContain("../");
+    expect(path).toBe("/api/v3/supplies/..%2Forders%2F999/deliver");
+  });
+
   it("get_statistics -> statistics host, v5 path", async () => {
     await handleTool(client, "get_statistics", {
       dateFrom: "2024-01-01T00:00:00Z",

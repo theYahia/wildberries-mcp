@@ -94,9 +94,9 @@ export class WBClient {
     this.token = options.token;
     this.pool = new RateLimiterPool(HOST_LIMITS, { rpm: 300, minIntervalMs: 200 });
     this.maxRetries = options.maxRetries ?? 3;
+    const envTimeout = process.env["WB_TIMEOUT_MS"] ? parseInt(process.env["WB_TIMEOUT_MS"], 10) : NaN;
     this.timeoutMs =
-      options.timeoutMs ??
-      (process.env["WB_TIMEOUT_MS"] ? parseInt(process.env["WB_TIMEOUT_MS"], 10) : DEFAULT_TIMEOUT_MS);
+      options.timeoutMs ?? (Number.isFinite(envTimeout) && envTimeout > 0 ? envTimeout : DEFAULT_TIMEOUT_MS);
     this.hostOverrides = options.hostOverrides ?? {};
   }
 
@@ -153,7 +153,9 @@ export class WBClient {
                 err instanceof Error ? err.message : String(err)
               }`,
         );
-        if (attempt < this.maxRetries) {
+        // A timeout already consumed the full budget — retrying it just multiplies
+        // latency. Retry transient network errors only.
+        if (!aborted && attempt < this.maxRetries) {
           await this.sleep(1000 * (attempt + 1));
           continue;
         }

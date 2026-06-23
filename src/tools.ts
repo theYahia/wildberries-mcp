@@ -460,23 +460,23 @@ export async function handleTool(
       return client.post(HOSTS.marketplace, "/api/v3/supplies", { name: args.name });
 
     case "add_orders_to_supply": {
-      const supplyId = args.supplyId as string;
+      const supplyId = encodeURIComponent(args.supplyId as string);
       const orderIds = args.orderIds as number[];
       // WB: one assembly order per PATCH call (returns 204). Loop sequentially.
       for (const orderId of orderIds) {
         await client.patch(HOSTS.marketplace, `/api/v3/supplies/${supplyId}/orders/${orderId}`);
       }
-      return { supplyId, added: orderIds };
+      return { supplyId: args.supplyId, added: orderIds };
     }
 
     case "deliver_supply": {
-      const supplyId = args.supplyId as string;
+      const supplyId = encodeURIComponent(args.supplyId as string);
       await client.patch(HOSTS.marketplace, `/api/v3/supplies/${supplyId}/deliver`);
-      return { supplyId, delivered: true };
+      return { supplyId: args.supplyId, delivered: true };
     }
 
     case "get_supply_barcode": {
-      const supplyId = args.supplyId as string;
+      const supplyId = encodeURIComponent(args.supplyId as string);
       const type = (args.type as string) ?? "svg";
       // VERIFY: response is JSON { barcode, file(base64) } on current API.
       return client.get(HOSTS.marketplace, `/api/v3/supplies/${supplyId}/barcode`, { type });
@@ -572,13 +572,14 @@ export async function handleTool(
       );
       const taskId = create?.data?.taskId;
       if (!taskId) throw new Error("paid_storage: API did not return a taskId");
+      const taskSeg = encodeURIComponent(taskId);
 
       // VERIFY: status string ("done") and download envelope shape.
       await client.pollUntil({
         fn: () =>
           client.get<{ data?: { status?: string } }>(
             HOSTS.analytics,
-            `/api/v1/paid_storage/tasks/${taskId}/status`,
+            `/api/v1/paid_storage/tasks/${taskSeg}/status`,
             undefined,
             { limiterKey: LIMITER_KEYS.paidStorageStatus },
           ),
@@ -590,7 +591,7 @@ export async function handleTool(
 
       const report = await client.get(
         HOSTS.analytics,
-        `/api/v1/paid_storage/tasks/${taskId}/download`,
+        `/api/v1/paid_storage/tasks/${taskSeg}/download`,
         undefined,
         { limiterKey: LIMITER_KEYS.paidStorageDownload },
       );
@@ -614,7 +615,7 @@ export async function handleTool(
       const params: Record<string, string> = {};
       if (args.isAnswered !== undefined) params.isAnswered = String(args.isAnswered);
       if (args.take) params.take = String(args.take);
-      if (args.skip) params.skip = String(args.skip);
+      if (args.skip !== undefined) params.skip = String(args.skip);
       if (args.order) params.order = String(args.order);
       return client.get(HOSTS.feedbacks, "/api/v1/feedbacks", params);
     }
