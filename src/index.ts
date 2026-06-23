@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 /**
  * Wildberries Seller API MCP Server.
- * 15 tools. Production-grade rate limiting with 409 penalty protection.
+ * Production-grade per-category rate limiting with 409 penalty protection.
  *
  * Usage:
  *   WB_API_TOKEN=... wildberries-mcp          # stdio transport
  *   WB_API_TOKEN=... wildberries-mcp --http    # Streamable HTTP transport (port 3000)
  */
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { WBClient } from "./client.js";
-import { toolDefinitions, handleTool, type ToolName } from "./tools.js";
+import { toolDefinitions } from "./tools.js";
+import { createServer, TOOL_COUNT } from "./server.js";
+
+export const VERSION = "1.0.0";
 
 const WB_API_TOKEN = process.env.WB_API_TOKEN;
 
@@ -23,45 +25,6 @@ if (!WB_API_TOKEN) {
 }
 
 const client = new WBClient({ token: WB_API_TOKEN });
-
-const server = new McpServer({
-  name: "wildberries-mcp",
-  version: "0.3.3",
-});
-
-// Register all 15 tools
-for (const [name, def] of Object.entries(toolDefinitions)) {
-  const toolName = name as ToolName;
-  server.tool(
-    toolName,
-    def.description,
-    def.inputSchema.properties as Record<string, unknown>,
-    async (args: Record<string, unknown>) => {
-      try {
-        const result = await handleTool(client, toolName, args);
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `Error: ${message}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-    },
-  );
-}
 
 // Transport selection
 const cliArgs = process.argv.slice(2);
@@ -79,14 +42,26 @@ if (useHttp) {
     const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
 
     if (url.pathname === "/mcp" && req.method === "POST") {
+      // Fresh stateless server+transport per request.
+      const server = createServer(client, VERSION);
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
+      });
+      res.on("close", () => {
+        void transport.close();
+        void server.close();
       });
       await server.connect(transport);
       await transport.handleRequest(req, res);
     } else if (url.pathname === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "ok", tools: Object.keys(toolDefinitions).length }));
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          version: VERSION,
+          tools: Object.keys(toolDefinitions).length,
+        }),
+      );
     } else {
       res.writeHead(404);
       res.end("Not found");
@@ -94,10 +69,13 @@ if (useHttp) {
   });
 
   httpServer.listen(PORT, () => {
-    process.stderr.write(`[wildberries-mcp] Streamable HTTP server on http://localhost:${PORT}/mcp\n`);
+    process.stderr.write(
+      `[wildberries-mcp] Streamable HTTP server on http://localhost:${PORT}/mcp (${TOOL_COUNT} tools)\n`,
+    );
   });
 } else {
+  const server = createServer(client, VERSION);
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write("[wildberries-mcp] Connected via stdio\n");
+  process.stderr.write(`[wildberries-mcp] Connected via stdio (${TOOL_COUNT} tools)\n`);
 }
