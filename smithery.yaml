@@ -1,6 +1,6 @@
 name: wildberries-mcp
-description: Wildberries Seller API MCP server. 15 tools. Products, orders, stocks, ABC analysis, feedbacks. Production-grade rate limiting.
-version: 0.3.3
+description: Wildberries Seller API MCP server. 30 tools — products, prices, stocks, orders, sales, FBS supplies, analytics, feedbacks, questions, returns, ads, ABC analysis. Per-category host routing + rate limiting.
+version: 1.0.0
 
 startCommand:
   type: stdio
