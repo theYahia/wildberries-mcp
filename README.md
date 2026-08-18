@@ -1,3 +1,17 @@
+> ## 🗄 Репозиторий заархивирован
+>
+> Разработка переехала в **[theYahia/WWmcp](https://github.com/theYahia/WWmcp)** — монорепозиторий MCP-серверов для незападных API: СНГ, MENA, Африка, LATAM, Юго-Восточная Азия. Общее ядро `@theyahia/mcp-core`, единый CI, единый релизный конвейер.
+>
+> Актуальная версия того, что лежало здесь: [`servers/wildberries/`](https://github.com/theYahia/WWmcp/tree/main/servers/wildberries)
+>
+> Пакет в npm прежний — [`@theyahia/wildberries-mcp`](https://www.npmjs.com/package/@theyahia/wildberries-mcp), ставится и работает как раньше.
+> Здесь больше ничего не обновляется. Задачи и pull request'ы — в WWmcp.
+>
+> **Archived — development moved to [theYahia/WWmcp](https://github.com/theYahia/WWmcp),** a monorepo of MCP servers for non-Western APIs.
+> The current version of this package now lives at [`servers/wildberries/`](https://github.com/theYahia/WWmcp/tree/main/servers/wildberries).
+> The npm package [`@theyahia/wildberries-mcp`](https://www.npmjs.com/package/@theyahia/wildberries-mcp) is unchanged.
+> Please open issues and pull requests there.
+
 # @theyahia/wildberries-mcp
 
 MCP server for the **Wildberries** Seller API — **30 tools** across products, prices, stocks, orders, sales, FBS supplies, analytics, feedbacks, questions, returns, and ads. Per-category host routing with rate limiting and 409 penalty protection. Stdio + Streamable HTTP transports.
