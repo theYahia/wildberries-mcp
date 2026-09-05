@@ -1,3 +1,17 @@
+> ## 🗄 Репозиторий заархивирован
+>
+> Разработка переехала в **[theYahia/WWmcp](https://github.com/theYahia/WWmcp)** — монорепозиторий MCP-серверов для незападных API: СНГ, MENA, Африка, LATAM, Юго-Восточная Азия. Общее ядро `@theyahia/mcp-core`, единый CI, единый релизный конвейер.
+>
+> Актуальная версия того, что лежало здесь: [`servers/wildberries/`](https://github.com/theYahia/WWmcp/tree/main/servers/wildberries)
+>
+> Пакет в npm прежний — [`@theyahia/wildberries-mcp`](https://www.npmjs.com/package/@theyahia/wildberries-mcp), ставится и работает как раньше.
+> Здесь больше ничего не обновляется. Задачи и pull request'ы — в WWmcp.
+>
+> **Archived — development moved to [theYahia/WWmcp](https://github.com/theYahia/WWmcp),** a monorepo of MCP servers for non-Western APIs.
+> The current version of this package now lives at [`servers/wildberries/`](https://github.com/theYahia/WWmcp/tree/main/servers/wildberries).
+> The npm package [`@theyahia/wildberries-mcp`](https://www.npmjs.com/package/@theyahia/wildberries-mcp) is unchanged.
+> Please open issues and pull requests there.
+
 # MCP-сервер для Wildberries Seller API — 30 инструментов для ИИ-агента
 
 Если вы искали, как подключить кабинет продавца Wildberries к Claude или другому ИИ-агенту, — этот сервер даёт агенту прямой доступ к Seller API: остатки и цены, заказы и продажи, поставки FBS, аналитика, отзывы, вопросы, возвраты и реклама. Спрашиваете обычными словами — «какие товары кончаются на складе Коледино», «подними цену на SW-4410 до 3490 ₽» — и получаете готовый ответ таблицей, а не выгрузку, которую ещё надо разбирать. Маршрутизация по хостам категорий, соблюдение лимитов запросов и защита от 409-штрафа — на стороне сервера.
